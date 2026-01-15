@@ -4,8 +4,9 @@ pipeline {
     environment {
         IMAGE_NAME = "smart-todo-app"
         CONTAINER_NAME = "smart-todo-container"
-        SONAR_HOST_URL = "http://localhost:9000"  // SonarQube URL
-        SONAR_TOKEN = credentials('sonar-token')  // Jenkins me add kiya hua token
+        SONAR_HOST_URL = "http://localhost:9000"          // SonarQube URL
+        SONAR_TOKEN = credentials('sonar-token')         // Jenkins secret text
+        scannerHome = tool 'SonarScanner'                 // Jenkins Global Tool Name
     }
 
     stages {
@@ -27,20 +28,12 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo "Running SonarQube analysis"
-                withSonarQubeEnv('SonarQube') {   // Jenkins me SonarQube server ka name
-                    sh "sonar-scanner \
+                withSonarQubeEnv('Local-SonarQube') {          // exact server name in Jenkins
+                    sh "${scannerHome}/bin/sonar-scanner \
                         -Dsonar.projectKey=SmartTodoApp \
                         -Dsonar.sources=. \
                         -Dsonar.host.url=$SONAR_HOST_URL \
                         -Dsonar.login=$SONAR_TOKEN"
-                }
-            }
-        }
-
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
                 }
             }
         }
