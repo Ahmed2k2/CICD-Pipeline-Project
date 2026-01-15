@@ -26,8 +26,8 @@ pipeline {
             steps {
                 echo "Deploying Docker container"
                 sh '''
-                sudo docker rm -f $CONTAINER_NAME || true
-                sudo docker run -d --name $CONTAINER_NAME -p 5000:5000 $IMAGE_NAME
+                docker rm -f $CONTAINER_NAME || true
+                docker run -d --name $CONTAINER_NAME -p 5000:5000 $IMAGE_NAME
                 '''
             }
         }
