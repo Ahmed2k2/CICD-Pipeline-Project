@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "smart-todo-app"
-        CONTAINER_NAME = "smart-todo-container"
-        SONAR_HOST_URL = "http://localhost:9000"          // SonarQube URL
-        SONAR_TOKEN = credentials('sonar-token')         // Jenkins secret text
+        IMAGE_NAME = "dockerized-smart-todo-app"
+        CONTAINER_NAME = "dockerized-smart-todo-container"
+        SONAR_HOST_URL = "http://sonarqube:9001"          // SonarQube URL
+        SONAR_TOKEN = credentials('docker-sonar-token')         // Jenkins secret text
         scannerHome = tool 'SonarScanner'                 // Jenkins Global Tool Name
     }
 
@@ -28,9 +28,9 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo "Running SonarQube analysis"
-                withSonarQubeEnv('Local-SonarQube') {          // exact server name in Jenkins
+                withSonarQubeEnv('Docker-SonarQube') {          // exact server name in Jenkins
                     sh "${scannerHome}/bin/sonar-scanner \
-                        -Dsonar.projectKey=SmartTodoApp \
+                        -Dsonar.projectKey=DockerSmartTodoApp \
                         -Dsonar.sources=. \
                         -Dsonar.host.url=$SONAR_HOST_URL \
                         -Dsonar.login=$SONAR_TOKEN"
@@ -43,7 +43,7 @@ pipeline {
                 echo "Deploying Docker container"
                 sh '''
                 docker rm -f $CONTAINER_NAME || true
-                docker run -d --name $CONTAINER_NAME -p 5000:5000 $IMAGE_NAME
+                docker run -d --name $CONTAINER_NAME -p 5001:5001 --network cicd-network $IMAGE_NAME
                 '''
             }
         }
@@ -58,3 +58,4 @@ pipeline {
         }
     }
 }
+
