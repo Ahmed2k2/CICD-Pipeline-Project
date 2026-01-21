@@ -12,17 +12,17 @@ pipeline {
     stages {
 
         stage('Checkout Code') {
-    steps {
-        git branch: 'main', 
-            url: 'https://github.com/Ahmed2k2/CICD-Pipeline-Project.git', 
-            credentialsId: 'Git-Token'
-    }
-}
+            steps {
+                git branch: 'main', 
+                url: 'https://github.com/Ahmed2k2/CICD-Pipeline-Project.git', 
+                credentialsId: 'Git-Token'
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
                 echo "Building Docker image now"
-                sh 'docker build -t $IMAGE_NAME .'
+                 sh 'docker build -t $IMAGE_NAME .'
             }
         }
 
