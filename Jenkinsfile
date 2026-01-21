@@ -13,8 +13,9 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
-                echo "Pulling code from GitHub"
-                checkout scm
+                git branch: 'main',
+                    url: 'https://github.com/Ahmed2k2/CICD-Pipeline-Project.git',
+                    credentialsId: 'github-token'
             }
         }
 
