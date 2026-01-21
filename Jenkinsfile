@@ -2,42 +2,40 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "dockerized-smart-todo-app"
+        IMAGE_NAME     = "dockerized-smart-todo-app"
         CONTAINER_NAME = "dockerized-smart-todo-container"
-        SONAR_HOST_URL = "http://sonarqube:9001"          // SonarQube URL
-        SONAR_TOKEN = credentials('docker-sonar-token')         // Jenkins secret text
-        scannerHome = tool 'SonarScanner'                 // Jenkins Global Tool Name
+        SONAR_HOST_URL = "http://sonarqube:9001"
+        SONAR_TOKEN    = credentials('docker-sonar-token')
+        scannerHome    = tool 'SonarScanner'
     }
 
     stages {
 
-            stages {
-
-       stage('Checkout Code') {
-    steps {
-        git branch: 'main',
-            url: 'https://github.com/Ahmed2k2/CICD-Pipeline-Project.git',
-            credentialsId: 'git-creds'   // Jenkins me PAT
-    }
-}
-
+        stage('Code Ready') {
+            steps {
+                echo "Code already checked out from SCM"
+                sh 'ls -la'
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
-                echo "Building Docker image now"
-                 sh 'docker build -t $IMAGE_NAME .'
+                echo "Building Docker image"
+                sh 'docker build -t $IMAGE_NAME .'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 echo "Running SonarQube analysis"
-                withSonarQubeEnv('Docker-SonarQube') {          // exact server name in Jenkins
-                    sh "${scannerHome}/bin/sonar-scanner \
-                        -Dsonar.projectKey=DockerSmartTodoApp \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=$SONAR_HOST_URL \
-                        -Dsonar.login=$SONAR_TOKEN"
+                withSonarQubeEnv('Docker-SonarQube') {
+                    sh """
+                    ${scannerHome}/bin/sonar-scanner \
+                    -Dsonar.projectKey=DockerSmartTodoApp \
+                    -Dsonar.sources=. \
+                    -Dsonar.host.url=${SONAR_HOST_URL} \
+                    -Dsonar.login=${SONAR_TOKEN}
+                    """
                 }
             }
         }
@@ -46,8 +44,9 @@ pipeline {
             steps {
                 echo "Deploying Docker container"
                 sh '''
-                docker rm -f $CONTAINER_NAME || true
-                docker run -d --name $CONTAINER_NAME -p 5001:5001 --network cicd-network $IMAGE_NAME
+                docker rm -f dockerized-smart-todo-container || true
+                docker run -d --name dockerized-smart-todo-container \
+                -p 5001:5001 --network cicd-network dockerized-smart-todo-app
                 '''
             }
         }
@@ -62,4 +61,3 @@ pipeline {
         }
     }
 }
-
