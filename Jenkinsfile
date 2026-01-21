@@ -1,63 +1,31 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME     = "dockerized-smart-todo-app"
-        CONTAINER_NAME = "dockerized-smart-todo-container"
-        SONAR_HOST_URL = "http://sonarqube:9001"
-        SONAR_TOKEN    = credentials('docker-sonar-token')
-        scannerHome    = tool 'SonarScanner'
-    }
-
     stages {
-
-        stage('Code Ready') {
+        stage('Checkout Code') {
             steps {
-                echo "Code already checked out from SCM"
+                echo "Cloning repository from GitHub"
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: 'main']],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/Ahmed2k2/CICD-Pipeline-Project.git',
+                        credentialsId: 'git-creds'   // Jenkins me PAT wala ID
+                    ]]
+                ])
+                
+                echo "Listing workspace content to verify code"
                 sh 'ls -la'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                echo "Building Docker image"
-                sh 'docker build -t $IMAGE_NAME .'
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            steps {
-                echo "Running SonarQube analysis"
-                withSonarQubeEnv('Docker-SonarQube') {
-                    sh """
-                    ${scannerHome}/bin/sonar-scanner \
-                    -Dsonar.projectKey=DockerSmartTodoApp \
-                    -Dsonar.sources=. \
-                    -Dsonar.host.url=${SONAR_HOST_URL} \
-                    -Dsonar.login=${SONAR_TOKEN}
-                    """
-                }
-            }
-        }
-
-        stage('Deploy Container') {
-            steps {
-                echo "Deploying Docker container"
-                sh '''
-                docker rm -f dockerized-smart-todo-container || true
-                docker run -d --name dockerized-smart-todo-container \
-                -p 5001:5001 --network cicd-network dockerized-smart-todo-app
-                '''
             }
         }
     }
 
     post {
         success {
-            echo "Deployment finally successful 🚀"
+            echo "Code checkout successful ✅"
         }
         failure {
-            echo "Pipeline failed ❌"
+            echo "Code checkout failed ❌"
         }
     }
 }
