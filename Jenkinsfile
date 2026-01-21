@@ -15,7 +15,7 @@ pipeline {
     steps {
         git branch: 'main', 
             url: 'https://github.com/Ahmed2k2/CICD-Pipeline-Project.git', 
-            credentialsId: 'Github-Token'
+            credentialsId: 'Git-Token'
     }
 }
 
